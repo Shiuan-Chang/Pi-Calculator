@@ -6,32 +6,28 @@
         xmlns:local="clr-namespace:Pi_Calculator"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid x:Name="Title">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="87*"/>
-            <ColumnDefinition Width="162*"/>
-            <ColumnDefinition Width="151*"/>
-        </Grid.ColumnDefinitions>
-        <DataGrid x:Name="dataTable"
-          HorizontalAlignment="Left"
-          Height="172"
-          VerticalAlignment="Top"
-          Width="800"
-          Margin="0,102,0,0"
-          Grid.ColumnSpan="3"
-          SelectionChanged="DataGrid_SelectionChanged"
-          AutoGenerateColumns="False"
-          IsReadOnly="True">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="sample" Binding="{Binding sample}" Width="*" />
-                <DataGridTextColumn Header="time" Binding="{Binding time}" Width="*" />
-                <DataGridTextColumn Header="value" Binding="{Binding value, StringFormat=N5}" Width="*" />
-            </DataGrid.Columns>
-        </DataGrid>
-        <Label x:Name="title" Content="PI Calculator" Grid.ColumnSpan="3" HorizontalAlignment="Center" Height="51" VerticalAlignment="Top" Width="800" Background="#FFA3FFF9" FontSize="24" FontWeight="Bold" HorizontalContentAlignment="Center"/>
-        <Label x:Name="SampleSize" Content="Sample Size" HorizontalAlignment="Left" Height="41" Margin="10,56,0,0" VerticalAlignment="Top" Width="114" FontSize="18"/>
-        <TextBox x:Name="number" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="33" Margin="124,60,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="151"/>
-        <Button x:Name="add" Grid.Column="1" Content="Add" HorizontalAlignment="Left" Height="33" Margin="115,60,0,0" VerticalAlignment="Top" Width="47" FontSize="16" Background="#FFC0F2FF" Click="add_Click"/>
 
-    </Grid>
+    <StackPanel Orientation="Vertical">
+        <StackPanel>
+            <Label x:Name="title" Content="{Binding Title}"  HorizontalAlignment="Center" Height="51" VerticalAlignment="Top" Width="800" Background="#FFA3FFF9" FontSize="24" FontWeight="Bold" HorizontalContentAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label x:Name="SampleSize" Content="Sample Size" FontSize="18"/>
+            <TextBox x:Name="number" Text="10000" VerticalAlignment="Center"/>
+            <Button x:Name="add_btn" Click="add_Click"  Content="Add"  FontSize="16" Background="#FFC0F2FF"/>
+        </StackPanel>
+        <StackPanel>
+            <ItemsControl ItemsSource="{Binding resultList}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="{Binding sample}"></Label>
+                            <Label Content="{Binding time}"></Label>
+                            <Label Content="{Binding value}"></Label>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </StackPanel>
 </Window>
