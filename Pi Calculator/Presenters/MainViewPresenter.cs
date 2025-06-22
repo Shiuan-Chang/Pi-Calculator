@@ -11,24 +11,35 @@ namespace Pi_Calculator.Presenters
 {
     public class MainViewPresenter : IPIMissionPresenter
     {
-        public IPIMissionView mainView;
-        public MainViewPresenter(IPIMissionView mainWindowView)
+
+        private readonly IPIMissionView mainView;
+
+        public MainViewPresenter(IPIMissionView view) => mainView = view;
+
+        public async Task TakeDataRequest(long sampleSize)
         {
-            mainView = mainWindowView;
+            PIModel data = await PIMission.CalculateWithTiming(sampleSize);
+            mainView.UpdateDataView(data);   
         }
 
-        public void TakeDataRequest(int sampleSize)
-        {
-            double pi = PIMission.calculate(sampleSize);
+        //public IPIMissionView mainView;
+        //public MainViewPresenter(IPIMissionView mainWindowView)
+        //{
+        //    mainView = mainWindowView;
+        //}
 
-            var data = new PIModel
-            {
-                sample = sampleSize,
-                time = DateTime.Now,
-                value = pi
-            };
-            mainView.UpdateDataView(data);
-        }
+        //public void TakeDataRequest(long sampleSize)
+        //{
+        //    double pi = PIMission.calculate(sampleSize);
 
-    }
+        //    var data = new PIModel
+        //    {
+        //        sample = sampleSize,
+        //        time = DateTime.Now,
+        //        value = pi
+        //    };
+        //    mainView.UpdateDataView(data);
+        //}
+    } 
+        
 }

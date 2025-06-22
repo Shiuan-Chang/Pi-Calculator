@@ -50,44 +50,45 @@ namespace Pi_Calculator
         //View 從後端拿回的資料
         //ViewModel 跟View(畫面)綁定的資料
 
-        private void add_Click(object sender, RoutedEventArgs e)
+        private async void add_Click(object sender, RoutedEventArgs e)
         {
-            this.Debounce(() =>
+            this.Debounce(async () => 
             {
-                int sampleSize = int.Parse(number.Text);
-                mainViewPresenter.TakeDataRequest(sampleSize);
-
+                if (!long.TryParse(number.Text, out long sampleSize) || sampleSize > 0)
+                    await mainViewPresenter.TakeDataRequest(sampleSize);
+                else MessageBox.Show("請輸入正整數");
             }, 500);
-
-            //if (int.TryParse(number.Text, out int sampleSize))
-            //{
-            //    if (!results.ContainsKey(sampleSize))
-            //    {
-            //        var stopWatech = Stopwatch.StartNew();
-            //        double pi = PIMission.calculate(sampleSize);
-            //        stopWatech.Stop();
-
-            //        var data = new PIModel
-            //        {
-            //            sample = sampleSize,
-            //            time = stopWatech.Elapsed,
-            //            value = pi
-            //        };
-
-            //        results[sampleSize] = data;
-            //        resultList.Add(data);
-            //    }
-            //    else if (results.ContainsKey(sampleSize))
-            //    {
-            //        MessageBox.Show("資料已經存在");
-            //    }
-            //    else
-            //    {
-            //        MessageBox.Show("請輸入有效數值");
-            //    }
-            //}
         }
+
+        //if (int.TryParse(number.Text, out int sampleSize))
+        //{
+        //    if (!results.ContainsKey(sampleSize))
+        //    {
+        //        var stopWatech = Stopwatch.StartNew();
+        //        double pi = PIMission.calculate(sampleSize);
+        //        stopWatech.Stop();
+
+        //        var data = new PIModel
+        //        {
+        //            sample = sampleSize,
+        //            time = stopWatech.Elapsed,
+        //            value = pi
+        //        };
+
+        //        results[sampleSize] = data;
+        //        resultList.Add(data);
+        //    }
+        //    else if (results.ContainsKey(sampleSize))
+        //    {
+        //        MessageBox.Show("資料已經存在");
+        //    }
+        //    else
+        //    {
+        //        MessageBox.Show("請輸入有效數值");
+        //    }
+        //}
     }
+    
 }
 
 // 6/7 跟MVP做結合了解

@@ -12,31 +12,56 @@ namespace Pi_Calculator.Utilities
     {
         // presenter 呼叫PIMission
         //calculateWithTiming 不會存在
-        public static PIModel calculateWithTiming(int sampleSize)
+
+        public static async Task<double> Calculate(long sampleNumber)
         {
-            double pi = calculate(sampleSize);
+            long insideCircle = 0;                     
+            var rand = new ThreadLocal<Random>(()       
+                      => new Random(Guid.NewGuid().GetHashCode()));
+
+            await Parallel.ForAsync(0L,sampleNumber,(index, token) =>                      
+                {
+                    double x = rand.Value!.NextDouble(); 
+                    double y = rand.Value!.NextDouble();
+
+                    if (x * x + y * y < 1)
+                        Interlocked.Increment(ref insideCircle);
+
+                    return ValueTask.CompletedTask;
+                });
+
+            return 4.0 * insideCircle / sampleNumber;
+        }
+
+
+        public static async Task<PIModel> CalculateWithTiming(long sampleSize)
+        {
+            var start = DateTime.Now;                       
+
+            double pi = await Calculate(sampleSize);  
+
             return new PIModel
             {
                 sample = sampleSize,
-                time = DateTime.Now,
+                time = start,    
                 value = pi
             };
         }
 
-        public static double calculate(int sampleNumber)
-        {
-            // 用parallel for處理
-            int insideCirclePointNum = 0;
-            Random rand = new Random();
+        //public static double calculate(long sampleNumber)
+        //{
+        //    // 用parallel for處理
+        //    int insideCirclePointNum = 0;
+        //    Random rand = new Random();
 
-            for (int i = 0; i < sampleNumber; i++)
-            {
-                double x = rand.NextDouble(); // 介於0-1之間的亂數
-                double y = rand.NextDouble();
+        //    for (int i = 0; i < sampleNumber; i++)
+        //    {
+        //        double x = rand.NextDouble(); // 介於0-1之間的亂數
+        //        double y = rand.NextDouble();
 
-                if (x * x + y * y < 1) { insideCirclePointNum++; }
-            }
-            return (double)(4 * insideCirclePointNum) / sampleNumber; // 前方加double，否則會一直算出整數
-        }
+        //        if (x * x + y * y < 1) { insideCirclePointNum++; }
+        //    }
+        //    return (double)(4.0 * insideCirclePointNum) / sampleNumber; // 前方加double，否則會一直算出整數
+        //}
     }
 }

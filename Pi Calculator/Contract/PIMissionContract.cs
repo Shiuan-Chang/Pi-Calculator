@@ -15,7 +15,7 @@ namespace Pi_Calculator.Contract
         };
         public interface IPIMissionPresenter 
         {
-            void TakeDataRequest(int sample);
+            Task TakeDataRequest(long sample);
         
         };
     }

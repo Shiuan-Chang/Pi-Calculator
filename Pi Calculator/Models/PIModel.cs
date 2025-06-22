@@ -8,7 +8,7 @@ namespace Pi_Calculator.Models
 {
     public class PIModel
     {
-        public int sample { get; set; }
+        public long sample { get; set; }
         public DateTime time { get; set; }
         public double value { get; set; }
     }
