@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Pi_Calculator.Models;
 using Pi_Calculator.Presenters;
 using Pi_Calculator.Utilities;
@@ -33,10 +34,12 @@ namespace Pi_Calculator
             mainViewPresenter = new MainViewPresenter(this);
             DataContext = viewModel;
             mainViewPresenter.StartedMission();
-            Timer timer = new Timer((state) =>
-            {
-                mainViewPresenter.FetchCompletedMission();
-            }, null,0, 1000);
+
+            // 使用 DispatcherTimer，確保 FetchCompletedMission 在 UI thread 呼叫
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += (s, e) => mainViewPresenter.FetchCompletedMission();
+            timer.Start();
         }
 
         public void UpdateDataView(List<PIModel> results)

@@ -22,24 +22,25 @@ namespace Pi_Calculator.Presenters
 
         public void StartedMission() 
         {
-            Task.Run(() =>
+            Task.Run(async() =>
             {
 
                 while (true)
                 {
                     if (taskQueue.Count > 0)
                     {
-                        taskQueue.TryDequeue(out long sampleSize);
-                        
-                        // 讓calculator 做計算，計算完丟到concurrentBag cache
-                        double pi = PIMission.Calculate(sampleSize).Result; // result 是task屬性，這邊最後會取得double結果值
-                        PIModel result = new PIModel
+                        if (taskQueue.TryDequeue(out long sampleSize)) 
                         {
-                            sample = sampleSize,
-                            time = DateTime.Now,
-                            value = pi
-                        };
-                        cache.Add(result);
+                            // 讓calculator 做計算，計算完丟到concurrentBag cache
+                            double pi = await PIMission.Calculate(sampleSize); // result 是task屬性，這邊最後會取得double結果值
+                            var result = new PIModel
+                            {
+                                sample = sampleSize,
+                                time = DateTime.Now,
+                                value = pi
+                            };
+                            cache.Add(result);
+                        }
                     }
                 }
             });
