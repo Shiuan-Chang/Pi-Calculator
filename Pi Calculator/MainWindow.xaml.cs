@@ -26,16 +26,25 @@ namespace Pi_Calculator
     {
         private MainViewPresenter mainViewPresenter;
         public MainViewModel viewModel { get; set; } = new MainViewModel();
+
         public MainWindow()
         {
             InitializeComponent();
             mainViewPresenter = new MainViewPresenter(this);
             DataContext = viewModel;
+            mainViewPresenter.StartedMission();
+            Timer timer = new Timer((state) =>
+            {
+                mainViewPresenter.FetchCompletedMission();
+            }, null,0, 1000);
         }
 
-        public void UpdateDataView(PIModel results)
+        public void UpdateDataView(List<PIModel> results)
         {
-            viewModel.Add(results);
+            foreach (var result in results)
+            {
+                viewModel.Add(result);
+            }
         }
 
         // VM 做邏輯判斷 view:做渲染 mdoel: DAO資料
@@ -55,7 +64,7 @@ namespace Pi_Calculator
             this.Debounce(async () => 
             {
                 if (!long.TryParse(number.Text, out long sampleSize) || sampleSize > 0)
-                    await mainViewPresenter.TakeDataRequest(sampleSize);
+                     mainViewPresenter.SendMissionRequest(sampleSize);
                 else MessageBox.Show("請輸入正整數");
             }, 500);
         }
@@ -88,8 +97,6 @@ namespace Pi_Calculator
         //    }
         //}
     }
-    
 }
-
 // 6/7 跟MVP做結合了解
 

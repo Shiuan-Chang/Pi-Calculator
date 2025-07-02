@@ -17,9 +17,12 @@ namespace Pi_Calculator
         public String Title { get; set; } = "PI Calcurator";
         public ObservableCollection<PIModel> resultList { get; set; } = new ObservableCollection<PIModel>(); // MVVM架構，不用再清空，ObservableCollection
 
-        public void Add(PIModel list) 
+        public void Add(PIModel item)
         {
-                resultList.Add(list);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                resultList.Add(item);
+            });
         }
     }
 }

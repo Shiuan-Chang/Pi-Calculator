@@ -21,10 +21,18 @@ namespace Pi_Calculator.Utilities
 
             await Parallel.ForAsync(0L,sampleNumber,(index, token) =>                      
                 {
+                    // double 1 = rand.Value!.NextDouble(); 
+                    // double 2 = rand.Value!.NextDouble();
+                    // double 3 = rand.Value!.NextDouble();
+                   // double 4 = rand.Value!.NextDouble();
+                   // 
+
                     double x = rand.Value!.NextDouble(); 
                     double y = rand.Value!.NextDouble();
 
                     if (x * x + y * y < 1)
+                        // 若用lock解決速度會較慢，且搭配題目要求interlocked會更為合適
+                        // 但若涉及一個以上的變數，或是涉及到多行程式碼，還是要使用lock
                         Interlocked.Increment(ref insideCircle);
 
                     return ValueTask.CompletedTask;
