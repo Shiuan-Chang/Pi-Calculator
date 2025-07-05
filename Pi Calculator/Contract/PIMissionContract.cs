@@ -39,8 +39,8 @@ namespace Pi_Calculator.Contract
             /// <summary>
             /// 暫停執行緒任務
             /// </summary>
-            //void StopMission();
-        
+            void StopMission();
+
         };
     }
 }

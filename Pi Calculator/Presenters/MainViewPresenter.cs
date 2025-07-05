@@ -16,6 +16,7 @@ namespace Pi_Calculator.Presenters
     {
 
         private readonly IPIMissionView mainView;
+        private CancellationTokenSource cts = new CancellationTokenSource();
         ConcurrentQueue<long> taskQueue = new ConcurrentQueue<long>();
         ConcurrentBag<PIModel> cache = new ConcurrentBag<PIModel>();
         ConcurrentDictionary<long, bool> exsitedSamples = new ConcurrentDictionary<long, bool>();
@@ -33,10 +34,12 @@ namespace Pi_Calculator.Presenters
                     {
                         if (taskQueue.TryDequeue(out long sampleSize)) 
                         {
+                            var token = cts.Token;
                             Task.Run(async () =>
                             {
                                 // 讓calculator 做計算，計算完丟到concurrentBag cache
-                                double pi = await PIMission.Calculate(sampleSize); // result 是task屬性，這邊最後會取得double結果值
+                                double pi = await PIMission.Calculate(sampleSize, token); // result 是task屬性，這邊最後會取得double結果值
+                                if (token.IsCancellationRequested) return;
                                 var result = new PIModel
                                 {
                                     sample = sampleSize,
@@ -71,6 +74,11 @@ namespace Pi_Calculator.Presenters
             List<PIModel> result = cache.ToList();
             cache.Clear();  
             this.mainView.UpdateDataView(result);
+        }
+
+        public void StopMission()
+        {
+            cts.Cancel(); // 所有 token 都會收到取消通知
         }
 
 

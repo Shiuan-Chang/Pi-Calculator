@@ -14,7 +14,7 @@
         <StackPanel Orientation="Horizontal">
             <Label x:Name="SampleSize" Content="Sample Size" FontSize="18"/>
             <TextBox x:Name="number" Text="10000" VerticalAlignment="Center"/>
-            <Button x:Name="add_btn" Click="add_Click"  Content="Add"  FontSize="16" Background="#FFC0F2FF"/>
+            <Button x:Name="add_btn" Click="add_Click"  Content="Add"  FontSize="16" Background="#FFC0F2FF" Margin="20,0,0,0"/>
         </StackPanel>
         <StackPanel>
             <ItemsControl ItemsSource="{Binding resultList}">
@@ -29,5 +29,6 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </StackPanel>
+        <Button x:Name="pause_btn" Content="Pause" Height="41" Width="60" Background="#FFF52020" Foreground="#FFF5EFEF" FontWeight="Bold" Margin="700,250,0,0" Click="pause_btn_Click"/>
     </StackPanel>
 </Window>

@@ -13,13 +13,13 @@ namespace Pi_Calculator.Utilities
         // presenter 呼叫PIMission
         //calculateWithTiming 不會存在
 
-        public static async Task<double> Calculate(long sampleNumber)
+        public static async Task<double> Calculate(long sampleNumber, CancellationToken token)
         {
             long insideCircle = 0;                     
             var rand = new ThreadLocal<Random>(()       
                       => new Random(Guid.NewGuid().GetHashCode()));
 
-            await Parallel.ForAsync(0L,sampleNumber,(index, token) =>                      
+            await Parallel.ForAsync(0L,sampleNumber, new ParallelOptions { CancellationToken = token },(index, token) =>                      
                 {
                     // double 1 = rand.Value!.NextDouble(); 
                     // double 2 = rand.Value!.NextDouble();
@@ -42,11 +42,11 @@ namespace Pi_Calculator.Utilities
         }
 
 
-        public static async Task<PIModel> CalculateWithTiming(long sampleSize)
+        public static async Task<PIModel> CalculateWithTiming(long sampleSize, CancellationToken token)
         {
             var start = DateTime.Now;                       
 
-            double pi = await Calculate(sampleSize);  
+            double pi = await Calculate(sampleSize, token);  
 
             return new PIModel
             {

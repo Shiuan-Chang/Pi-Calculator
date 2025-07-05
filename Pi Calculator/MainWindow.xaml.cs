@@ -75,6 +75,13 @@ namespace Pi_Calculator
             }, 500);
         }
 
+        private void pause_btn_Click(object sender, RoutedEventArgs e)
+        {
+            mainViewPresenter.StopMission();
+        }
+
+
+
         //if (int.TryParse(number.Text, out int sampleSize))
         //{
         //    if (!results.ContainsKey(sampleSize))
