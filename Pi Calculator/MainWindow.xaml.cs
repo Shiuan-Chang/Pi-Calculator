@@ -27,6 +27,7 @@ namespace Pi_Calculator
     {
         private MainViewPresenter mainViewPresenter;
         public MainViewModel viewModel { get; set; } = new MainViewModel();
+        private Timer timer;
 
         public MainWindow()
         {
@@ -35,11 +36,13 @@ namespace Pi_Calculator
             DataContext = viewModel;
             mainViewPresenter.StartedMission();
 
-            // 使用 DispatcherTimer，確保 FetchCompletedMission 在 UI thread 呼叫
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += (s, e) => mainViewPresenter.FetchCompletedMission();
-            timer.Start();
+            timer = new Timer((state) =>
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    mainViewPresenter.FetchCompletedMission();
+                });
+            }, null, 0, 1000);
         }
 
         public void UpdateDataView(List<PIModel> results)
@@ -66,7 +69,7 @@ namespace Pi_Calculator
         {
             this.Debounce(async () => 
             {
-                if (!long.TryParse(number.Text, out long sampleSize) || sampleSize > 0)
+                if (long.TryParse(number.Text, out long sampleSize) && sampleSize > 0)
                      mainViewPresenter.SendMissionRequest(sampleSize);
                 else MessageBox.Show("請輸入正整數");
             }, 500);

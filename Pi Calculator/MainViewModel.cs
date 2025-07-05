@@ -19,10 +19,7 @@ namespace Pi_Calculator
 
         public void Add(PIModel item)
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                resultList.Add(item);
-            });
+                resultList.Add(item);   
         }
     }
 }

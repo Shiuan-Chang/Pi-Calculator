@@ -8,6 +8,7 @@ using Pi_Calculator.Models;
 using static Pi_Calculator.Contract.PIMissionContract;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Windows;
 
 namespace Pi_Calculator.Presenters
 {
@@ -17,12 +18,13 @@ namespace Pi_Calculator.Presenters
         private readonly IPIMissionView mainView;
         ConcurrentQueue<long> taskQueue = new ConcurrentQueue<long>();
         ConcurrentBag<PIModel> cache = new ConcurrentBag<PIModel>();
+        ConcurrentDictionary<long, bool> exsitedSamples = new ConcurrentDictionary<long, bool>();
 
         public MainViewPresenter(IPIMissionView view) => mainView = view;
 
         public void StartedMission() 
         {
-            Task.Run(async() =>
+            Task.Run(() =>
             {
 
                 while (true)
@@ -31,15 +33,18 @@ namespace Pi_Calculator.Presenters
                     {
                         if (taskQueue.TryDequeue(out long sampleSize)) 
                         {
-                            // 讓calculator 做計算，計算完丟到concurrentBag cache
-                            double pi = await PIMission.Calculate(sampleSize); // result 是task屬性，這邊最後會取得double結果值
-                            var result = new PIModel
+                            Task.Run(async () =>
                             {
-                                sample = sampleSize,
-                                time = DateTime.Now,
-                                value = pi
-                            };
-                            cache.Add(result);
+                                // 讓calculator 做計算，計算完丟到concurrentBag cache
+                                double pi = await PIMission.Calculate(sampleSize); // result 是task屬性，這邊最後會取得double結果值
+                                var result = new PIModel
+                                {
+                                    sample = sampleSize,
+                                    time = DateTime.Now,
+                                    value = pi
+                                };
+                                cache.Add(result);
+                            });
                         }
                     }
                 }
@@ -48,6 +53,16 @@ namespace Pi_Calculator.Presenters
 
         public async void SendMissionRequest(long sampleSize)
         {
+            if (exsitedSamples.ContainsKey(sampleSize))
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show($"樣本數 {sampleSize} 已處理過，請勿重複提交！");
+                });
+                return;
+            }
+
+            exsitedSamples.TryAdd(sampleSize, true); // 標記為已提交
             this.taskQueue.Enqueue(sampleSize);
         }
 
