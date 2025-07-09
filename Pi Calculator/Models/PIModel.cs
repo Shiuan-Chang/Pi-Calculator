@@ -11,5 +11,6 @@ namespace Pi_Calculator.Models
         public long sample { get; set; }
         public DateTime time { get; set; }
         public double value { get; set; }
+        public CancellationTokenSource? TokenSource { get; set; }
     }
 }
