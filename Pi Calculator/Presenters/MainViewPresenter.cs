@@ -14,14 +14,14 @@ using System.Threading.Channels;
 
 namespace Pi_Calculator.Presenters
 {
+    //DLQ 掛掉的狀態
     public class MainViewPresenter : IPIMissionPresenter
     {
 
         private readonly IPIMissionView mainView;
         private CancellationTokenSource cts = new CancellationTokenSource();
-        ConcurrentQueue<long> taskQueue = new ConcurrentQueue<long>();
-        ConcurrentBag<PIModel> cache = new ConcurrentBag<PIModel>();
-        ConcurrentDictionary<long, bool> exsitedSamples = new ConcurrentDictionary<long, bool>();
+        ConcurrentBag<PIModel> cache = new();
+        ConcurrentDictionary<long, PIModel> exsitedSamples = new ConcurrentDictionary<long, PIModel>();
 
         public MainViewPresenter(IPIMissionView view) => mainView = view;
 
@@ -36,8 +36,14 @@ namespace Pi_Calculator.Presenters
             Task.Run(async () =>
             {
                 Debug.WriteLine("Hello");
-                await foreach(long sampleSize in channel.Reader.ReadAllAsync(cts.Token))
+                await foreach(long sampleSize in channel.Reader.ReadAllAsync(cts.Token)) // 這裡的token 代表全局的token
                 {
+                    if (!exsitedSamples.TryGetValue(sampleSize, out var model) && model.Status != MissionStatus.Canceled)
+                        continue;
+
+                    model.Status = MissionStatus.Running;
+                    var token = model.TokenSource!.Token;
+
                     var sampleCts = new CancellationTokenSource();
 
                     _ = Task.Run(async () =>
@@ -45,62 +51,50 @@ namespace Pi_Calculator.Presenters
                         Debug.WriteLine("Hello");
 
                         var token = cts.Token;
-                        //    // 讓calculator 做計算，計算完丟到concurrentBag cache
-                        double pi = await PIMission.Calculate(sampleSize, token); // result 是task屬性，這邊最後會取得double結果值
-                        if (token.IsCancellationRequested) return;
-                        var result = new PIModel
+                        
+                        double pi = await PIMission.Calculate(sampleSize, token);  // 這邊token 用錯了(應該拿model token)  提示: 做Cancel時候可能會需要有一個 try catch  去捕捉 CancenlException
+                        if (token.IsCancellationRequested)
                         {
-                            sample = sampleSize,
-                            time = DateTime.Now,
-                            value = pi,
-                            TokenSource = sampleCts
-                        };
-                        cache.Add(result);
+                            model.Status = MissionStatus.Canceled;
+                            return;
+                        }
+
+                        model.value = pi;
+                        model.Status = MissionStatus.Finished;
+
                     });
                    
                 }
-
-
-                // 會有無窮迴圈一直持續跑的問題
-                //Task.Run( () =>
-                //while (true)
-                //{
-                //    Debug.WriteLine($"目前柱列中的任務數:{taskQueue.Count}");
-                //    if (taskQueue.Count > 0 && taskQueue.TryDequeue(out long sampleSize))
-                //    {
-                //        Task.Run(async () =>
-                //        {
-                //            var token = cts.Token;
-                //            //    // 讓calculator 做計算，計算完丟到concurrentBag cache
-                //            double pi = await PIMission.Calculate(sampleSize, token); // result 是task屬性，這邊最後會取得double結果值
-                //            if (token.IsCancellationRequested) return;
-                //            var result = new PIModel
-                //            {
-                //                sample = sampleSize,
-                //                time = DateTime.Now,
-                //                value = pi
-                //            };
-                //            cache.Add(result);
-                //        });
-                //    }
-                //}
             });
         }
 
         public async void SendMissionRequest(long sampleSize)
         {
-            if (exsitedSamples.ContainsKey(sampleSize))
+            if (exsitedSamples.TryGetValue(sampleSize, out var existing))
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                if (existing.Status == MissionStatus.Canceled)
                 {
-                    MessageBox.Show($"樣本數 {sampleSize} 已處理過，請勿重複提交！");
-                });
-                return;
+                    MessageBox.Show("此任務已取消，可再次提交");
+                    exsitedSamples.TryRemove(sampleSize, out _); // 移除可重新送
+                }
+                else
+                {
+                    MessageBox.Show("樣本數已提交，請勿重複");
+                    return;
+                }
             }
 
-            exsitedSamples.TryAdd(sampleSize, true); // 標記為已提交
-                                                     // this.taskQueue.Enqueue(sampleSize);
-            channel.Writer.TryWrite(sampleSize); // 將任務寫入Channel
+            var model = new PIModel
+            {
+                sample = sampleSize,
+                time = DateTime.Now,
+                TokenSource = new CancellationTokenSource(),
+                Status = MissionStatus.Pending
+            };
+
+            exsitedSamples[sampleSize] = model;
+            cache.Add(model);
+            channel.Writer.TryWrite(sampleSize);
         }
 
         public void FetchCompletedMission() 
@@ -110,6 +104,11 @@ namespace Pi_Calculator.Presenters
             this.mainView.UpdateDataView(result);
         }
 
+        public void RestartMission()
+        {
+            cts = new CancellationTokenSource();
+            StartedMission();
+        }
         public void StopMission()
         {
             cts.Cancel(); // 所有 token 都會收到取消通知
@@ -134,6 +133,31 @@ namespace Pi_Calculator.Presenters
         //    };
         //    mainView.UpdateDataView(data);
         //}
-    } 
-        
+
+        // 會有無窮迴圈一直持續跑的問題
+        //Task.Run( () =>
+        //while (true)
+        //{
+        //    Debug.WriteLine($"目前柱列中的任務數:{taskQueue.Count}");
+        //    if (taskQueue.Count > 0 && taskQueue.TryDequeue(out long sampleSize))
+        //    {
+        //        Task.Run(async () =>
+        //        {
+        //            var token = cts.Token;
+        //            //    // 讓calculator 做計算，計算完丟到concurrentBag cache
+        //            double pi = await PIMission.Calculate(sampleSize, token); // result 是task屬性，這邊最後會取得double結果值
+        //            if (token.IsCancellationRequested) return;
+        //            var result = new PIModel
+        //            {
+        //                sample = sampleSize,
+        //                time = DateTime.Now,
+        //                value = pi
+        //            };
+        //            cache.Add(result);
+        //        });
+        //    }
+        //}
+
+    }
+
 }

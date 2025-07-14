@@ -12,5 +12,6 @@ namespace Pi_Calculator.Models
         public DateTime time { get; set; }
         public double value { get; set; }
         public CancellationTokenSource? TokenSource { get; set; }
+        public MissionStatus Status { get; set; } = MissionStatus.Pending;
     }
 }

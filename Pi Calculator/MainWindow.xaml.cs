@@ -28,6 +28,8 @@ namespace Pi_Calculator
         private MainViewPresenter mainViewPresenter;
         public MainViewModel viewModel { get; set; } = new MainViewModel();
         private Timer timer;
+        private bool isRunning = false;
+
 
         public MainWindow()
         {
@@ -65,6 +67,8 @@ namespace Pi_Calculator
         //View 從後端拿回的資料
         //ViewModel 跟View(畫面)綁定的資料
 
+
+        //HW:將 start/pause 兩者作結合， 如果是 Start Mission 就開始計算， 如果是 Pause Mission 就暫停計算
         private async void add_Click(object sender, RoutedEventArgs e)
         {
             this.Debounce(async () => 
@@ -78,6 +82,23 @@ namespace Pi_Calculator
         private void pause_btn_Click(object sender, RoutedEventArgs e)
         {
             mainViewPresenter.StopMission();
+        }
+
+        private void startPause_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isRunning)
+            {
+                mainViewPresenter.RestartMission(); // 新啟動 token & 任務讀取迴圈
+                startPause.Content = "Pause Mission";
+                isRunning = true;
+            }
+            else
+            {
+                mainViewPresenter.StopMission(); // 停止 Channel reader
+                startPause.Content = "Start Mission";
+                isRunning = false;
+            }
+
         }
 
 

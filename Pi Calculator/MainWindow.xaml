@@ -14,7 +14,8 @@
         <StackPanel Orientation="Horizontal">
             <Label x:Name="SampleSize" Content="Sample Size" FontSize="18"/>
             <TextBox x:Name="number" Text="10000" VerticalAlignment="Center"/>
-            <Button x:Name="add_btn" Click="add_Click"  Content="Add"  FontSize="16" Background="#FFC0F2FF" Margin="20,0,0,0"/>
+            <Button x:Name="add_btn" Click="add_Click"  Content="Add"  FontSize="16" Background="#FFC0F2FF" Margin="20,0,0,0" Height="28"/>
+            <Button x:Name="startPause" Content="Start/Pause" Height="32" Width="72" Click="startPause_Click" Margin="30,0,0,0" Background="#FF0AFD88" Foreground="#FF1B0202" BorderBrush="#FF190000" FontWeight="Bold"/>
         </StackPanel>
         <StackPanel>
             <ItemsControl ItemsSource="{Binding resultList}">
@@ -24,11 +25,13 @@
                             <Label Content="{Binding sample}"></Label>
                             <Label Content="{Binding time}"></Label>
                             <Label Content="{Binding value}"></Label>
+                            <Label Content="{Binding Status}"></Label>
+                            <Button x:Name="pause_btn" Content="Cancel" Height="25" Width="60" Background="#FFF52020" Foreground="#FFF5EFEF" FontWeight="Bold" Margin="10,0,0,0"  HorizontalAlignment="Center"  VerticalAlignment="Center" Click="pause_btn_Click"/>
+
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </StackPanel>
-        <Button x:Name="pause_btn" Content="Pause" Height="41" Width="60" Background="#FFF52020" Foreground="#FFF5EFEF" FontWeight="Bold" Margin="700,250,0,0" Click="pause_btn_Click"/>
     </StackPanel>
 </Window>
